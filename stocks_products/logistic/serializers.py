@@ -1,20 +1,28 @@
 from rest_framework import serializers
 
+from stocks_products.logistic.models import Product, StockProduct
+
 
 class ProductSerializer(serializers.ModelSerializer):
-    # настройте сериализатор для продукта
-    pass
-
+    class Meta:
+        model = Product
+        fields = ['title', 'description']
 
 class ProductPositionSerializer(serializers.ModelSerializer):
     # настройте сериализатор для позиции продукта на складе
-    pass
+    class Meta:
+        model = StockProduct
+        fields = ['stock', 'product', 'quantity', 'price']
 
 
 class StockSerializer(serializers.ModelSerializer):
     positions = ProductPositionSerializer(many=True)
 
     # настройте сериализатор для склада
+    def validated_data(self, value):
+        if 'test' in value:
+            raise ValueError('Error')
+        return value
 
     def create(self, validated_data):
         # достаем связанные данные для других таблиц
