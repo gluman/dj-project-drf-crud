@@ -1,20 +1,29 @@
 from rest_framework import serializers
 
+from stocks_products.logistic.models import Stock, Product, StockProduct
+
 
 class ProductSerializer(serializers.ModelSerializer):
-    # настройте сериализатор для продукта
-    pass
+        title = serializers.CharField(max_length=60)
+        class Meta:
+            model = Product
+            fields = ['title', 'description']
 
 
 class ProductPositionSerializer(serializers.ModelSerializer):
-    # настройте сериализатор для позиции продукта на складе
-    pass
-
+    stock = serializers.IntegerField(min_value=1)
+    product = serializers.IntegerField(min_value=1)
+    quantity = serializers.IntegerField(min_value=1)
+    price = serializers.DecimalField(max_digits=18, decimal_places=2)
+    class Meta:
+        model = StockProduct
+        fields = ['stock', 'product', 'quantity','price']
 
 class StockSerializer(serializers.ModelSerializer):
     positions = ProductPositionSerializer(many=True)
-
-    # настройте сериализатор для склада
+    class Meta:
+        model = Stock
+        fields = ['address', 'products']
 
     def create(self, validated_data):
         # достаем связанные данные для других таблиц
@@ -23,7 +32,8 @@ class StockSerializer(serializers.ModelSerializer):
         # создаем склад по его параметрам
         stock = super().create(validated_data)
 
-        # здесь вам надо заполнить связанные таблицы
+        for item in positions:
+            i = StockProduct.objects.get_or_create(stock=stock, **item)
         # в нашем случае: таблицу StockProduct
         # с помощью списка positions
 
@@ -35,7 +45,11 @@ class StockSerializer(serializers.ModelSerializer):
 
         # обновляем склад по его параметрам
         stock = super().update(instance, validated_data)
-
+        for item in positions:
+            StockProduct.objects.update_or_create(
+                stock=stock,
+                product=item.get('product'),
+                defaults={'price': item.get('price'), 'quantity': item.get('quantity')})
         # здесь вам надо обновить связанные таблицы
         # в нашем случае: таблицу StockProduct
         # с помощью списка positions
