@@ -3,7 +3,7 @@
 @baseUrl = http://localhost:8000/api/v1
 
 # создание продукта
-POST {{baseUrl}}/products/
+POST http://localhost:8000/api/v1/products/
 Content-Type: application/json
 
 {
