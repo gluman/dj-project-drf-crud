@@ -17,7 +17,7 @@ class ProductPositionSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(max_digits=18, decimal_places=2)
     class Meta:
         model = StockProduct
-        fields = ['stock', 'product', 'quantity','price']
+        fields = ['product', 'quantity','price']
 
 class StockSerializer(serializers.ModelSerializer):
     positions = ProductPositionSerializer(many=True)
@@ -33,7 +33,7 @@ class StockSerializer(serializers.ModelSerializer):
         stock = super().create(validated_data)
 
         for item in positions:
-            i = StockProduct.objects.get_or_create(stock=stock, **item)
+            i = StockProduct.objects.create(stock=stock, **item)
         # в нашем случае: таблицу StockProduct
         # с помощью списка positions
 
